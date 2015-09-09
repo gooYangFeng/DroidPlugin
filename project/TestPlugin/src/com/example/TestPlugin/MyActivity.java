@@ -45,9 +45,9 @@ public class MyActivity extends ActionBarActivity {
         @Override
         public CharSequence getPageTitle(int position) {
             if (position == PAGE_INDEX_INSTALL) {
-                return getString(R.string.page_title_install);
+                return getString(R.string.label_already_install);
             } else {
-                return getString(R.string.page_title_candidate);
+                return getString(R.string.label_to_be_install);
             }
         }
     };

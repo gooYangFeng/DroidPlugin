@@ -111,10 +111,10 @@ public class InstalledFragment extends ListFragment implements ServiceConnection
                 title.setText(item.title);
 
                 final TextView version = (TextView) convertView.findViewById(R.id.textView2);
-                version.setText(String.format("%s(%s)", item.versionName, item.versionCode));
+                version.setText(getString(R.string.package_version_format, item.versionName, item.versionCode));
 
                 TextView btn = (TextView) convertView.findViewById(R.id.button2);
-                btn.setText("打开");
+                btn.setText(R.string.label_open);
                 btn.setOnClickListener(new OnClickListener() {
 
                     @Override
@@ -124,7 +124,7 @@ public class InstalledFragment extends ListFragment implements ServiceConnection
                 });
 
                 TextView btn3 = (TextView) convertView.findViewById(R.id.button3);
-                btn3.setText("卸载");
+                btn3.setText(R.string.label_uninstall);
                 btn3.setOnClickListener(new OnClickListener() {
 
                     @Override
@@ -142,7 +142,7 @@ public class InstalledFragment extends ListFragment implements ServiceConnection
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setEmptyText("没有安装插件");
+        setEmptyText(getString(R.string.plugin_not_install));
         setListAdapter(adapter);
         setListShown(false);
         getListView().setOnItemClickListener(null);
@@ -206,25 +206,25 @@ public class InstalledFragment extends ListFragment implements ServiceConnection
 
     private void doUninstall(final ApkItem item) {
         AlertDialog.Builder builder = new Builder(getActivity());
-        builder.setTitle("警告，你确定要删除么？");
-        builder.setMessage("警告，你确定要删除" + item.title + "么？");
-        builder.setNegativeButton("删除", new DialogInterface.OnClickListener() {
+        builder.setTitle(R.string.package_dialog_remove_title);
+        builder.setMessage(getString(R.string.package_dialog_remove_content_format, item.title));
+        builder.setNegativeButton(R.string.button_delete, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 onDeleteConfirm(item);
             }
         });
-        builder.setNeutralButton("取消", null);
+        builder.setNeutralButton(R.string.button_cancel, null);
         builder.show();
     }
 
     protected void onDeleteConfirm(final ApkItem item) {
         if (!PluginManager.getInstance().isConnected()) {
-            Toast.makeText(getActivity(), "服务未连接", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.prompt_no_connection, Toast.LENGTH_SHORT).show();
         } else {
             try {
                 PluginManager.getInstance().deletePackage(item.packageInfo.packageName, 0);
-                Toast.makeText(getActivity(), "删除完成", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.prompt_delete_complete, Toast.LENGTH_SHORT).show();
             } catch (RemoteException e) {
                 e.printStackTrace();
             }

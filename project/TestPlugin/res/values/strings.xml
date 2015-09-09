@@ -2,6 +2,32 @@
 <resources>
     <string name="app_name">插件</string>
 
-    <string name="page_title_install">已安装</string>
-    <string name="page_title_candidate">待安装</string>
+    <string name="label_already_install">已安装</string>
+    <string name="label_to_be_install">待安装</string>
+    <string name="label_install_ongoing">安装中ing</string>
+    <string name="label_to_init_service">等待初始化服务</string>
+
+    <string name="label_install_exception">安装1</string>
+    <string name="label_install">安装</string>
+    <string name="label_open">打开</string>
+    <string name="label_uninstall">卸载</string>
+
+    <string name="package_version_format">%1$s(%1$s)</string>
+
+    <string name="package_dialog_remove_title">警告，你确定要删除么？</string>
+    <string name="package_dialog_remove_content_format">警告，你确定要删除%1$s么？</string>
+
+    <string name="button_delete">删除</string>
+    <string name="button_cancel">取消</string>
+
+    <string name="plugin_not_install">没有安装插件</string>
+
+    <string name="sd_without_apk">没有在sdcard找到apk</string>
+
+    <string name="prompt_no_connection">服务未连接</string>
+    <string name="prompt_delete_complete">删除完成</string>
+    <string name="prompt_retry_init_service_later">插件服务正在初始化，请稍后再试。。。</string>
+    <string name="prompt_duplicate_install">已经安装了，不能再安装</string>
+    <string name="prompt_install_complete">安装完成</string>
+    <string name="prompt_install_fail_too_much_permission">安装失败，文件请求的权限太多</string>
 </resources>

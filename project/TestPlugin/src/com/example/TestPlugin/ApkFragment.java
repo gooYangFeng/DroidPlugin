@@ -30,6 +30,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ApkFragment extends ListFragment implements ServiceConnection {
+
+    private static final String CACHE_FOLDER_NAME = "Plugin_Download";
+    private static final String PACKAGE_SUFFIX = ".apk";
+
     private ArrayAdapter<ApkItem> adapter;
     final Handler handler = new Handler();
 
@@ -44,11 +48,11 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
                 return;
             }
             if (!PluginManager.getInstance().isConnected()) {
-                Toast.makeText(getActivity(), "插件服务正在初始化，请稍后再试。。。", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.prompt_retry_init_service_later, Toast.LENGTH_SHORT).show();
             }
             try {
                 if (PluginManager.getInstance().getPackageInfo(item.packageInfo.packageName, 0) != null) {
-                    Toast.makeText(getActivity(), "已经安装了，不能再安装", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.prompt_duplicate_install, Toast.LENGTH_SHORT).show();
                 } else {
                     new Thread() {
                         @Override
@@ -91,21 +95,22 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
                 title.setText(item.title);
 
                 final TextView version = (TextView) convertView.findViewById(R.id.textView2);
-                version.setText(String.format("%s(%s)", item.versionName, item.versionCode));
+                version.setText(getString(R.string.package_version_format, item.versionName, item.versionCode));
 
                 TextView btn = (TextView) convertView.findViewById(R.id.button2);
                 try {
                     if (item.installing) {
-                        btn.setText("安装中ing");
+                        btn.setText(R.string.label_install_ongoing);
                     } else {
                         if (PluginManager.getInstance().isConnected()) {
-                            btn.setText(PluginManager.getInstance().getPackageInfo(item.packageInfo.packageName, 0) != null ? "已经安装" : "安装");
+                            btn.setText(PluginManager.getInstance().getPackageInfo(item.packageInfo.packageName, 0) != null ?
+                                    R.string.label_already_install : R.string.label_install);
                         } else {
-                            btn.setText("等待初始化服务");
+                            btn.setText(R.string.label_to_init_service);
                         }
                     }
                 } catch (Exception e) {
-                    btn.setText("安装1");
+                    btn.setText(R.string.label_install_exception);
                 }
                 btn.setOnClickListener(new OnClickListener() {
                     @Override
@@ -115,7 +120,7 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
                 });
 
                 TextView btn3 = (TextView) convertView.findViewById(R.id.button3);
-                btn3.setText("删除");
+                btn3.setText(R.string.button_delete);
                 btn3.setOnClickListener(new OnClickListener() {
 
                     @Override
@@ -135,7 +140,7 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         isViewCreated = true;
-        setEmptyText("没有在sdcard找到apk");
+        setEmptyText(getString(R.string.sd_without_apk));
         setListAdapter(adapter);
         setListShown(false);
         getListView().setOnItemClickListener(null);
@@ -159,6 +164,10 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
         }
     }
 
+    private boolean isValidPackageFile(File apk) {
+        return apk.exists() && apk.getPath().toLowerCase().endsWith(PACKAGE_SUFFIX);
+    }
+
     private void startLoad() {
         handler.post(new Runnable() {
             @Override
@@ -176,15 +185,15 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
 
                 List<File> apks = new ArrayList<File>(10);
                 for (File apk : file.listFiles()) {
-                    if (apk.exists() && apk.getPath().toLowerCase().endsWith(".apk")) {
+                    if (isValidPackageFile(apk)) {
                         apks.add(apk);
                     }
                 }
 
-                file = new File(Environment.getExternalStorageDirectory(), "360Download");
+                file = new File(Environment.getExternalStorageDirectory(), CACHE_FOLDER_NAME);
                 if (file.exists() && file.isDirectory()) {
                     for (File apk : file.listFiles()) {
-                        if (apk.exists() && apk.getPath().toLowerCase().endsWith(".apk")) {
+                        if (isValidPackageFile(apk)) {
                             apks.add(apk);
                         }
                     }
@@ -192,7 +201,7 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
                 PackageManager pm = getActivity().getPackageManager();
                 for (final File apk : apks) {
                     try {
-                        if (apk.exists() && apk.getPath().toLowerCase().endsWith(".apk")) {
+                        if (isValidPackageFile(apk)) {
                             final PackageInfo info = pm.getPackageArchiveInfo(apk.getPath(), 0);
                             if (info != null && isViewCreated) {
                                 try {
@@ -229,7 +238,8 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(getActivity(), re == PluginManager.INSTALL_FAILED_NO_REQUESTEDPERMISSION ? "安装失败，文件请求的权限太多" : "安装完成", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), re == PluginManager.INSTALL_FAILED_NO_REQUESTEDPERMISSION ?
+                            R.string.prompt_install_fail_too_much_permission : R.string.prompt_install_complete, Toast.LENGTH_SHORT).show();
                     adapter.notifyDataSetChanged();
                 }
             });
@@ -255,21 +265,21 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
 
     private void doUninstall(final ApkItem item) {
         AlertDialog.Builder builder = new Builder(getActivity());
-        builder.setTitle("警告，你确定要删除么？");
-        builder.setMessage("警告，你确定要删除" + item.title + "么？");
-        builder.setNegativeButton("删除", new DialogInterface.OnClickListener() {
+        builder.setTitle(R.string.package_dialog_remove_title);
+        builder.setMessage(getString(R.string.package_dialog_remove_content_format, item.title));
+        builder.setNegativeButton(R.string.button_delete, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 onDeleteConfirm(item);
             }
         });
-        builder.setNeutralButton("取消", null);
+        builder.setNeutralButton(R.string.button_cancel, null);
         builder.show();
     }
 
     protected void onDeleteConfirm(final ApkItem item) {
         new File(item.apkfile).delete();
         adapter.remove(item);
-        Toast.makeText(getActivity(), "删除成功", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), R.string.prompt_delete_complete, Toast.LENGTH_SHORT).show();
     }
 }
