@@ -7,7 +7,6 @@ import android.content.pm.PermissionInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
@@ -22,22 +21,21 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class MyActivity extends ActionBarActivity {
-
-
     private static final String TAG = "MyActivity";
 
+    private static final int PAGE_COUNT_TOTAL = 2;
+    private static final int PAGE_INDEX_INSTALL = 0;
 
     private ViewPager mViewPager;
     private FragmentStatePagerAdapter mFragmentStatePagerAdapter = new FragmentStatePagerAdapter(getSupportFragmentManager()) {
-
         @Override
         public int getCount() {
-            return 2;
+            return PAGE_COUNT_TOTAL;
         }
 
         @Override
         public Fragment getItem(int position) {
-            if (position == 0) {
+            if (position == PAGE_INDEX_INSTALL) {
                 return new InstalledFragment();
             } else {
                 return new ApkFragment();
@@ -46,10 +44,10 @@ public class MyActivity extends ActionBarActivity {
 
         @Override
         public CharSequence getPageTitle(int position) {
-            if (position == 0) {
-                return "已安装";
+            if (position == PAGE_INDEX_INSTALL) {
+                return getString(R.string.page_title_install);
             } else {
-                return "待安装";
+                return getString(R.string.page_title_candidate);
             }
         }
     };
@@ -93,7 +91,6 @@ public class MyActivity extends ActionBarActivity {
                     try {
                         w = new FileWriter(new File(Environment.getExternalStorageDirectory(), "per.txt"));
                         w.write(sb.toString());
-
                     } catch (IOException e) {
                         e.printStackTrace();
                     } finally {
@@ -111,6 +108,4 @@ public class MyActivity extends ActionBarActivity {
             }
         }.start();
     }
-
-
 }
