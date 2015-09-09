@@ -13,6 +13,9 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
 public class MyActivity extends Activity implements OnClickListener {
 
 
@@ -23,15 +26,17 @@ public class MyActivity extends Activity implements OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        findViewById(R.id.button1).setOnClickListener(this);
-        findViewById(R.id.button2).setOnClickListener(this);
-        findViewById(R.id.button3).setOnClickListener(this);
-        findViewById(R.id.button4).setOnClickListener(this);
-        findViewById(R.id.button5).setOnClickListener(this);
-        findViewById(R.id.button6).setOnClickListener(this);
-        findViewById(R.id.button7).setOnClickListener(this);
-        findViewById(R.id.button8).setOnClickListener(this);
-        findViewById(R.id.button9).setOnClickListener(this);
+        ButterKnife.bind(this);
+
+//        findViewById(R.id.button1).setOnClickListener(this);
+//        findViewById(R.id.button2).setOnClickListener(this);
+//        findViewById(R.id.button3).setOnClickListener(this);
+//        findViewById(R.id.button4).setOnClickListener(this);
+//        findViewById(R.id.button5).setOnClickListener(this);
+//        findViewById(R.id.button6).setOnClickListener(this);
+//        findViewById(R.id.button7).setOnClickListener(this);
+//        findViewById(R.id.button8).setOnClickListener(this);
+//        findViewById(R.id.button9).setOnClickListener(this);
     }
 
 
@@ -69,5 +74,53 @@ public class MyActivity extends Activity implements OnClickListener {
             startActivity(new Intent(this,ActivityTestActivity.class));
         }
 
+    }
+    @OnClick(R.id.button1)
+    void onServiceTest() {
+        startActivity(new Intent(this, ServiceTest1.class));
+    }
+    @OnClick(R.id.button2)
+    void onProviderTest() {
+        startActivity(new Intent(this, ContentProviderTest.class));
+    }
+    @OnClick(R.id.button3)
+    void onBroadcastTest() {
+        startActivity(new Intent(this, BroadcastReceiverTest.class));
+    }
+    @OnClick(R.id.button4)
+    void onToastTest() {
+        Toast.makeText(this, "哈哈Tost成功显示", Toast.LENGTH_SHORT).show();
+    }
+    @OnClick(R.id.button5)
+    void onNotificationTest() {
+        startActivity(new Intent(this, NotificationTest.class));
+    }
+    @OnClick(R.id.button6)
+    void onServicePlusTest() {
+        startActivity(new Intent(this, ServiceTest2.class));
+    }
+    @OnClick(R.id.button7)
+    void onProviderPlusTest() {
+        startActivity(new Intent(this, ContentProviderTest2.class));
+    }
+    @OnClick(R.id.button8)
+    void onPackageScanTest() {
+        try {
+            PackageManager pm = getPackageManager();
+            List<PackageInfo> infos = pm.getInstalledPackages(0);
+            if (infos != null && infos.size() > 0) {
+                Log.e(TAG, "infos.size=" + infos.size());
+                for (PackageInfo info : infos) {
+                    Log.e(TAG, "info.pkg=" + info.applicationInfo.loadLabel(pm) + ",pkg:" + info.packageName);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "e", e);
+        }
+    }
+
+    @OnClick(R.id.button9)
+    void onActivityTest() {
+        startActivity(new Intent(this, ActivityTestActivity.class));
     }
 }

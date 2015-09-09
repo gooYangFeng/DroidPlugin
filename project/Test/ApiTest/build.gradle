@@ -2,9 +2,8 @@ apply plugin: 'android'
 
 dependencies {
     compile fileTree(include: '*.jar', dir: 'libs')
-    compile fileTree(include: '*.jar', dir: '../libs')
-
     compile project(':Libraries:DroidPlugin')
+    compile 'com.jakewharton:butterknife:7.0.1'
 }
 
 android {
