@@ -39,12 +39,10 @@ public class InstalledFragment extends ListFragment implements ServiceConnection
     public InstalledFragment() {
     }
 
-
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         ApkItem item = adapter.getItem(position);
         if (v.getId() == R.id.button2) {
-
             PackageManager pm = getActivity().getPackageManager();
             Intent intent = pm.getLaunchIntentForPackage(item.packageInfo.packageName);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -52,29 +50,6 @@ public class InstalledFragment extends ListFragment implements ServiceConnection
         } else if (v.getId() == R.id.button3) {
             doUninstall(item);
         }
-    }
-
-    private void doUninstall(final ApkItem item) {
-        AlertDialog.Builder builder = new Builder(getActivity());
-        builder.setTitle("警告，你确定要删除么？");
-        builder.setMessage("警告，你确定要删除" + item.title + "么？");
-        builder.setNegativeButton("删除", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (!PluginManager.getInstance().isConnected()) {
-                    Toast.makeText(getActivity(), "服务未连接", Toast.LENGTH_SHORT).show();
-                } else {
-                    try {
-                        PluginManager.getInstance().deletePackage(item.packageInfo.packageName, 0);
-                        Toast.makeText(getActivity(), "删除完成", Toast.LENGTH_SHORT).show();
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-        builder.setNeutralButton("取消", null);
-        builder.show();
     }
 
     @Override
@@ -123,7 +98,7 @@ public class InstalledFragment extends ListFragment implements ServiceConnection
         mMyBroadcastReceiver.registerReceiver(getActivity().getApplication());
         adapter = new ArrayAdapter<ApkItem>(getActivity(), 0) {
             @Override
-            public View getView(final int position, View convertView, ViewGroup parent) {
+            public View getView(final int position, View convertView, final ViewGroup parent) {
                 if (convertView == null) {
                     convertView = LayoutInflater.from(getActivity()).inflate(R.layout.apk_item, null);
                 }
@@ -148,9 +123,9 @@ public class InstalledFragment extends ListFragment implements ServiceConnection
                     }
                 });
 
-                btn = (TextView) convertView.findViewById(R.id.button3);
-                btn.setText("卸载");
-                btn.setOnClickListener(new OnClickListener() {
+                TextView btn3 = (TextView) convertView.findViewById(R.id.button3);
+                btn3.setText("卸载");
+                btn3.setOnClickListener(new OnClickListener() {
 
                     @Override
                     public void onClick(View view) {
@@ -225,6 +200,33 @@ public class InstalledFragment extends ListFragment implements ServiceConnection
                 if (iremovedItem != null) {
                     adapter.remove(iremovedItem);
                 }
+            }
+        }
+    }
+
+    private void doUninstall(final ApkItem item) {
+        AlertDialog.Builder builder = new Builder(getActivity());
+        builder.setTitle("警告，你确定要删除么？");
+        builder.setMessage("警告，你确定要删除" + item.title + "么？");
+        builder.setNegativeButton("删除", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                onDeleteConfirm(item);
+            }
+        });
+        builder.setNeutralButton("取消", null);
+        builder.show();
+    }
+
+    protected void onDeleteConfirm(final ApkItem item) {
+        if (!PluginManager.getInstance().isConnected()) {
+            Toast.makeText(getActivity(), "服务未连接", Toast.LENGTH_SHORT).show();
+        } else {
+            try {
+                PluginManager.getInstance().deletePackage(item.packageInfo.packageName, 0);
+                Toast.makeText(getActivity(), "删除完成", Toast.LENGTH_SHORT).show();
+            } catch (RemoteException e) {
+                e.printStackTrace();
             }
         }
     }

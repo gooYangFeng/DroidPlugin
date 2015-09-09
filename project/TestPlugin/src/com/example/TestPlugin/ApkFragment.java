@@ -36,11 +36,45 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
     public ApkFragment() {
     }
 
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        final ApkItem item = adapter.getItem(position);
+        if (v.getId() == R.id.button2) {
+            if (item.installing) {
+                return;
+            }
+            if (!PluginManager.getInstance().isConnected()) {
+                Toast.makeText(getActivity(), "插件服务正在初始化，请稍后再试。。。", Toast.LENGTH_SHORT).show();
+            }
+            try {
+                if (PluginManager.getInstance().getPackageInfo(item.packageInfo.packageName, 0) != null) {
+                    Toast.makeText(getActivity(), "已经安装了，不能再安装", Toast.LENGTH_SHORT).show();
+                } else {
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            doInstall(item);
+                        }
+                    }.start();
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                try {
+                    PluginManager.getInstance().installPackage(item.apkfile, 0);
+                } catch (RemoteException e1) {
+                    e1.printStackTrace();
+                }
+                adapter.remove(item);
+            }
+        } else if (v.getId() == R.id.button3) {
+            doUninstall(item);
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
 
         adapter = new ArrayAdapter<ApkItem>(getActivity(), 0) {
             @Override
@@ -56,18 +90,9 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
                 TextView title = (TextView) convertView.findViewById(R.id.textView1);
                 title.setText(item.title);
 
-                TextView version = (TextView) convertView.findViewById(R.id.textView2);
+                final TextView version = (TextView) convertView.findViewById(R.id.textView2);
                 version.setText(String.format("%s(%s)", item.versionName, item.versionCode));
 
-                TextView btn3 = (TextView) convertView.findViewById(R.id.button3);
-                btn3.setText("删除");
-                btn3.setOnClickListener(new OnClickListener() {
-
-                    @Override
-                    public void onClick(View view) {
-                        onListItemClick(getListView(), view, position, getItemId(position));
-                    }
-                });
                 TextView btn = (TextView) convertView.findViewById(R.id.button2);
                 try {
                     if (item.installing) {
@@ -83,6 +108,15 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
                     btn.setText("安装1");
                 }
                 btn.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onListItemClick(getListView(), view, position, getItemId(position));
+                    }
+                });
+
+                TextView btn3 = (TextView) convertView.findViewById(R.id.button3);
+                btn3.setText("删除");
+                btn3.setOnClickListener(new OnClickListener() {
 
                     @Override
                     public void onClick(View view) {
@@ -90,27 +124,9 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
                     }
                 });
 
-
                 return convertView;
             }
         };
-
-    }
-
-    private void doUninstall(final ApkItem item) {
-        AlertDialog.Builder builder = new Builder(getActivity());
-        builder.setTitle("警告，你确定要删除么？");
-        builder.setMessage("警告，你确定要删除" + item.title + "么？");
-        builder.setNegativeButton("删除", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                new File(item.apkfile).delete();
-                adapter.remove(item);
-                Toast.makeText(getActivity(), "删除成功", Toast.LENGTH_SHORT).show();
-            }
-        });
-        builder.setNeutralButton("取消", null);
-        builder.show();
     }
 
     boolean isViewCreated = false;
@@ -180,12 +196,12 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
                             final PackageInfo info = pm.getPackageArchiveInfo(apk.getPath(), 0);
                             if (info != null && isViewCreated) {
                                 try {
-                                   handler.post(new Runnable() {
-                                       @Override
-                                       public void run() {
-                                           adapter.add(new ApkItem(getActivity(), info, apk.getPath()));
-                                       }
-                                   });
+                                    handler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            adapter.add(new ApkItem(getActivity(), info, apk.getPath()));
+                                        }
+                                    });
                                 } catch (Exception e) {
                                 }
                             }
@@ -195,42 +211,6 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
                 }
             }
         }.start();
-    }
-
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        final ApkItem item = adapter.getItem(position);
-        if (v.getId() == R.id.button2) {
-            if (item.installing) {
-                return;
-            }
-            if (!PluginManager.getInstance().isConnected()) {
-                Toast.makeText(getActivity(), "插件服务正在初始化，请稍后再试。。。", Toast.LENGTH_SHORT).show();
-            }
-            try {
-                if (PluginManager.getInstance().getPackageInfo(item.packageInfo.packageName, 0) != null) {
-                    Toast.makeText(getActivity(), "已经安装了，不能再安装", Toast.LENGTH_SHORT).show();
-                } else {
-                    new Thread() {
-                        @Override
-                        public void run() {
-                            doInstall(item);
-                        }
-                    }.start();
-
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                try {
-                    PluginManager.getInstance().installPackage(item.apkfile, 0);
-                } catch (RemoteException e1) {
-                    e1.printStackTrace();
-                }
-                adapter.remove(item);
-            }
-        } else if (v.getId() == R.id.button3) {
-            doUninstall(item);
-        }
     }
 
     private synchronized void doInstall(ApkItem item) {
@@ -271,5 +251,25 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
     public void onDestroy() {
         PluginManager.getInstance().removeServiceConnection(this);
         super.onDestroy();
+    }
+
+    private void doUninstall(final ApkItem item) {
+        AlertDialog.Builder builder = new Builder(getActivity());
+        builder.setTitle("警告，你确定要删除么？");
+        builder.setMessage("警告，你确定要删除" + item.title + "么？");
+        builder.setNegativeButton("删除", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                onDeleteConfirm(item);
+            }
+        });
+        builder.setNeutralButton("取消", null);
+        builder.show();
+    }
+
+    protected void onDeleteConfirm(final ApkItem item) {
+        new File(item.apkfile).delete();
+        adapter.remove(item);
+        Toast.makeText(getActivity(), "删除成功", Toast.LENGTH_SHORT).show();
     }
 }

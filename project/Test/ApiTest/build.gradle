@@ -1,15 +1,17 @@
 apply plugin: 'android'
 
 dependencies {
-    compile 'com.jakewharton:butterknife:+'
-
     compile fileTree(include: '*.jar', dir: 'libs')
+    compile fileTree(include: '*.jar', dir: '../libs')
+
     compile project(':Libraries:DroidPlugin')
 }
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+//    compileSdkVersion 22
+//    buildToolsVersion "23.0.0"
 
     project.buildDir = "bin"
 
